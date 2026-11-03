@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Showroom Admin</title>
+<style>
+  :root{--bg:#0e1526;--panel:#162138;--line:#243654;--text:#e8eefc;--muted:#90a4c8;--accent:#2563eb;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;}
+  *{box-sizing:border-box;} body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);}
+  a{color:var(--accent);} button{font-family:inherit;}
+  .btn{background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);} .btn.green{background:var(--green);color:#06240f;}
+  .btn.red{background:var(--red);} .btn.sm{padding:4px 9px;font-size:12px;}
+  input,select,textarea{background:#0d1627;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px;font-family:inherit;width:100%;}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;}
+  /* login */
+  #login{max-width:360px;margin:12vh auto;background:var(--panel);padding:28px;border-radius:16px;border:1px solid var(--line);}
+  #login h1{font-size:20px;margin:0 0 4px;} #login p{color:var(--muted);font-size:13px;margin:0 0 18px;}
+  .hint{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.6;}
+  /* layout */
+  #app{display:none;grid-template-columns:230px 1fr;height:100dvh;}
+  nav{background:var(--panel);border-right:1px solid var(--line);padding:16px 10px;overflow-y:auto;}
+  nav .brand{font-weight:700;padding:6px 10px 14px;display:flex;align-items:center;gap:8px;}
+  nav a{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;color:var(--text);text-decoration:none;font-size:14px;cursor:pointer;margin-bottom:2px;}
+  nav a:hover{background:#1d2b47;} nav a.active{background:var(--accent);} nav .sec{font-size:10px;text-transform:uppercase;color:var(--muted);padding:12px 12px 4px;letter-spacing:.5px;}
+  nav .badge{background:var(--red);border-radius:10px;font-size:11px;padding:0 7px;}
+  main{overflow-y:auto;padding:22px;}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;} .topbar h2{margin:0;font-size:20px;flex:1;}
+  .pill{font-size:11px;padding:3px 9px;border-radius:12px;border:1px solid var(--line);color:var(--muted);}
+  /* cards */
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;}
+  .card .n{font-size:30px;font-weight:700;} .card .l{font-size:12px;color:var(--muted);margin-top:4px;}
+  .card.hot{border-color:var(--red);} .card.warm{border-color:var(--amber);}
+  table{width:100%;border-collapse:collapse;font-size:13px;} th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis;}
+  th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--bg);} tr:hover td{background:#141f36;}
+  .tablewrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:72vh;}
+  .tag{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
+  .s-available,.s-booked2{background:#0d3321;color:#5ef19a;} .s-sold,.s-cancelled{background:#3a1420;color:#ff9db1;}
+  .s-booked,.s-new{background:#102a44;color:#7cc0ff;} .s-in_progress{background:#3a2d10;color:#ffd27a;} .s-ready,.s-won{background:#0d3321;color:#5ef19a;}
+  .hot{color:#ff9db1;font-weight:700;} .warm{color:#ffd27a;} .cold{color:var(--muted);}
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(3,8,18,.7);display:none;align-items:center;justify-content:center;z-index:50;padding:16px;}
+  .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;}
+  .modal h3{margin:0 0 6px;} .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0d3321;color:#5ef19a;padding:10px 18px;border-radius:10px;z-index:100;display:none;border:1px solid #1d6b43;}
+  .toast.err{background:#3a1420;color:#ff9db1;border-color:#7a2238;}
+  /* chats */
+  .chatlayout{display:grid;grid-template-columns:300px 1fr;gap:14px;height:76vh;}
+  .chatlist{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow-y:auto;}
+  .ci{padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;} .ci:hover,.ci.active{background:#1d2b47;}
+  .ci .top{display:flex;justify-content:space-between;} .ci .nm{font-weight:600;font-size:14px;} .ci .lt{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chatview{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;}
+  .chatview .head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;}
+  .chatmsgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+  .cm{max-width:78%;padding:9px 13px;border-radius:14px;font-size:14px;white-space:pre-wrap;line-height:1.45;}
+  .cm.customer{background:#1c2742;align-self:flex-start;} .cm.bot{background:#15233f;align-self:flex-end;border:1px solid #223a5e;}
+  .cm.staff{background:#2563eb;align-self:flex-end;} .cm.system{align-self:center;font-size:11px;color:var(--muted);background:transparent;}
+  .cm .who{font-size:10px;color:var(--muted);margin-bottom:2px;}
+  .chatinput{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px;}
+  .flex{display:flex;gap:8px;align-items:center;} .wrap{flex-wrap:wrap;} .muted{color:var(--muted);} .mono{font-family:ui-monospace,monospace;font-size:12px;}
+  .simlog{background:#0d1627;border:1px solid var(--line);border-radius:12px;padding:14px;height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>🚗 Showroom Admin</h1>
+  <p>Sign in to manage inventory, service, parts and chats.</p>
+  <label>Username</label><input id="u" value="admin" autocomplete="username">
+  <label>Password</label><input id="p" type="password" value="admin123" autocomplete="current-password">
+  <button class="btn" style="width:100%;margin-top:16px" onclick="login()">Sign in</button>
+  <div id="loginErr" style="color:var(--red);font-size:13px;margin-top:10px"></div>
+  <div class="hint">Demo logins — <b>admin / admin123</b> (owner).<br>Staff WhatsApp test numbers: 923001112233 (sales), 923214445566 (parts), 923337778899 (service).</div>
+</div>
+
+<div id="app">
+  <nav>
+    <div class="brand">🚗 <span id="brandName">Showroom</span></div>
+    <a onclick="go('dashboard')" data-v="dashboard">📊 Dashboard</a>
+    <a onclick="go('chats')" data-v="chats">💬 Live Chats <span class="badge" id="chatsBadge" style="display:none"></span></a>
+    <div class="sec">Data</div><div id="navTables"></div>
+    <div class="sec">Tools</div>
+    <a onclick="go('simulator')" data-v="simulator">🧪 WhatsApp Simulator</a>
+    <a onclick="go('knowledge')" data-v="knowledge">📄 Knowledge (RAG)</a>
+    <a onclick="go('importexport')" data-v="importexport">📁 Import / Export</a>
+    <div class="sec" id="meBox" style="margin-top:20px"></div>
+    <a onclick="logout()">🚪 Log out</a>
+  </nav>
+  <main id="view"></main>
+</div>
+
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API='/api/admin'; let TOKEN=localStorage.getItem('adtok')||'', ME=null, VIEW='dashboard', CUR=null;
+const $=id=>document.getElementById(id);
+function toast(msg,err){ const t=$('toast'); t.textContent=msg; t.className='toast'+(err?' err':''); t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
+function esc(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+async function api(path,opts={}){ opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},opts.headers||{});
+  const r=await fetch(API+path,opts); if(r.status===401){ logout(); throw new Error('Session expired'); }
+  const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.detail||('Error '+r.status)); return d; }
+
+async function login(){ $('loginErr').textContent='';
+  try{ const r=await fetch(API+'/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:$('u').value,password:$('p').value})}); const d=await r.json();
+    if(!r.ok) throw new Error(d.detail||'Login failed'); TOKEN=d.token; localStorage.setItem('adtok',TOKEN); boot();
+  }catch(e){ $('loginErr').textContent=e.message; } }
+function logout(){ TOKEN=''; localStorage.removeItem('adtok'); $('app').style.display='none'; $('login').style.display='block'; }
+
+async function boot(){ try{ ME=await api('/me'); }catch(e){ return logout(); }
+  $('login').style.display='none'; $('app').style.display='grid'; $('brandName').textContent=ME.name?('Showroom'):'';
+  $('meBox').innerHTML=`${esc(ME.name)} · <span class="muted">${ME.role}</span><br><span class="pill">AI: ${ME.engine}</span> <span class="pill">${ME.database}</span> <span class="pill">WhatsApp: ${ME.whatsapp?'live':'simulator'}</span>`;
+  $('navTables').innerHTML=ME.tables.map(t=>`<a onclick="go('t:${t.name}')" data-v="t:${t.name}">${esc(t.label)}</a>`).join('');
+  go('dashboard'); refreshBadge(); setInterval(refreshBadge,15000); }
+
+async function refreshBadge(){ try{ const c=await api('/chats?status=human'); const b=$('chatsBadge');
+  if(c.length){ b.style.display='inline-block'; b.textContent=c.length; } else b.style.display='none'; }catch(e){} }
+
+function go(v){ VIEW=v; document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active',a.dataset.v===v));
+  if(v==='dashboard') renderDashboard(); else if(v==='chats') renderChats(); else if(v==='simulator') renderSimulator();
+  else if(v==='knowledge') renderKnowledge(); else if(v==='importexport') renderImportExport();
+  else if(v.startsWith('t:')) renderTable(v.slice(2)); }
+
+/* ---------------- dashboard ---------------- */
+async function renderDashboard(){ const v=$('view'); v.innerHTML='<div class="topbar"><h2>Dashboard</h2></div><p class="muted">Loading…</p>';
+  const d=await api('/dashboard');
+  const card=(n,l,cls='')=>`<div class="card ${cls}"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+  v.innerHTML=`<div class="topbar"><h2>Dashboard</h2><span class="pill">Last 7 days bot-resolved: ${d.week.bot_resolved_percent??'–'}%</span></div>
+    <h3>Today</h3><div class="grid">
+      ${card(d.today.chats,'Chats today')}${card(d.today.waiting_for_human,'Waiting for human',d.today.waiting_for_human?'hot':'')}
+      ${card(d.today.test_drives,'Test drives')}${card(d.today.service_jobs,'Service jobs')}${card(d.today.cars_ready,'Cars ready')}</div>
+    <h3 style="margin-top:22px">Inventory</h3><div class="grid">
+      ${card(d.stock.new_available,'New in stock')}${card(d.stock.used_available,'Used in stock')}${card(d.stock.booked,'Booked')}
+      ${card(d.stock.parts_low,'Parts low/out',d.stock.parts_low?'warm':'')}</div>
+    <h3 style="margin-top:22px">Leads</h3><div class="grid">
+      ${card(d.leads.hot,'🔥 Hot','hot')}${card(d.leads.warm,'🌤️ Warm','warm')}${card(d.leads.cold,'❄️ Cold')}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px">
+      <div><h3>Most wanted models</h3><div class="tablewrap"><table><tr><th>Model</th><th>Leads</th></tr>
+        ${d.most_wanted_models.map(m=>`<tr><td>${esc(m.model)}</td><td>${m.leads}</td></tr>`).join('')||'<tr><td colspan=2 class=muted>No data yet</td></tr>'}</table></div></div>
+      <div><h3>🔥 Hot leads to call</h3><div class="tablewrap"><table><tr><th>Customer</th><th>Interest</th><th>Score</th></tr>
+        ${d.hot_leads.map(l=>`<tr><td>${esc(l.customer||'—')}<br><span class="mono muted">${esc(l.phone||'')}</span></td><td>${esc(l.interest||'')}</td><td class="hot">${l.score}</td></tr>`).join('')||'<tr><td colspan=3 class=muted>None</td></tr>'}</table></div></div>
+    </div>`; }
+
+/* ---------------- generic table ---------------- */
+let META=null, ROWS=[], LABELS={};
+async function renderTable(name){ const v=$('view'); v.innerHTML='<p class="muted">Loading…</p>';
+  META=await api('/meta/'+name); const data=await api('/t/'+name); ROWS=data.rows; LABELS=data.labels; CUR=name;
+  const cols=META.fields.filter(f=>f.list);
+  const ro=META.readonly;
+  v.innerHTML=`<div class="topbar"><h2>${esc(META.label)}</h2>
+      <input id="tsearch" placeholder="Search…" style="max-width:240px" oninput="searchTable()">
+      ${ro?'<span class="pill">read-only</span>':'<button class="btn green" onclick="openForm()">+ Add new</button>'}</div>
+    <div class="tablewrap"><table id="tbl"></table></div>`;
+  drawRows();
+}
+function cell(f,row){ let val=row[f.name];
+  if(f.ref==='car_models') return esc(LABELS.car_models[val]||val||'');
+  if(f.ref==='customers') return esc(LABELS.customers[val]||val||'');
+  if(f.type==='bool') return val?'✅':'—';
+  if(f.name==='price'||f.name==='bill_amount'||f.name==='budget'||f.name==='price_min'||f.name==='price_max') return val!=null?Number(val).toLocaleString():'';
+  if(f.name==='status') return `<span class="tag s-${esc(val)}">${esc(val)}</span>`;
+  if(f.name==='score_label') return `<span class="${esc(val)}">${esc(val)}</span>`;
+  if(f.type==='json') return `<span class="mono">${esc(JSON.stringify(val))}</span>`;
+  if((f.type==='datetime'||f.type==='date')&&val) return esc(String(val).replace('T',' ').slice(0,16));
+  return esc(val);
+}
+function drawRows(rows){ rows=rows||ROWS; const cols=META.fields.filter(f=>f.list);
+  const head='<tr>'+cols.map(f=>`<th>${esc(f.label)}</th>`).join('')+(META.readonly?'':'<th></th>')+'</tr>';
+  const body=rows.map(r=>'<tr>'+cols.map(f=>`<td>${cell(f,r)}</td>`).join('')+
+    (META.readonly?'':`<td class="flex"><button class="btn ghost sm" onclick='openForm(${r.id})'>Edit</button><button class="btn red sm" onclick="del(${r.id})">✕</button></td>`)+'</tr>').join('');
+  $('tbl').innerHTML=head+(body||`<tr><td colspan=20 class=muted>No rows</td></tr>`); }
+let searchTimer; function searchTable(){ clearTimeout(searchTimer); searchTimer=setTimeout(async()=>{
+  const q=$('tsearch').value; const d=await api('/t/'+CUR+'?q='+encodeURIComponent(q)); ROWS=d.rows; LABELS=d.labels; drawRows(); },300); }
+
+async function openForm(id){ const row=id?ROWS.find(r=>r.id===id):{}; const editing=!!id;
+  let html=`<h3>${editing?'Edit':'Add'} ${esc(META.label)}</h3><div class="row2">`;
+  for(const f of META.fields){ if(f.readonly&&!editing) continue;
+    const val=row[f.name]??''; const full=(f.type==='textarea'||f.type==='json');
+    html+=`<div style="${full?'grid-column:1/3':''}"><label>${esc(f.label)}${f.readonly?' (read-only)':''}</label>`;
+    if(f.type==='select') html+=`<select id="f_${f.name}" ${f.readonly?'disabled':''}>${(f.options||[]).map(o=>`<option ${o==val?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+    else if(f.type==='bool') html+=`<select id="f_${f.name}"><option value="true" ${val?'selected':''}>Yes</option><option value="false" ${!val?'selected':''}>No</option></select>`;
+    else if(f.type==='textarea'||f.type==='json') html+=`<textarea id="f_${f.name}" rows="3" ${f.readonly?'readonly':''}>${esc(f.type==='json'?JSON.stringify(val):val)}</textarea>`;
+    else if(f.type==='ref') html+=`<select id="f_${f.name}" data-ref="${f.ref}"></select>`;
+    else html+=`<input id="f_${f.name}" type="${f.type==='int'||f.type==='number'?'number':f.type==='date'?'date':f.type==='datetime'?'datetime-local':f.type==='password'?'password':'text'}" value="${esc(f.type==='datetime'&&val?String(val).slice(0,16):f.type==='date'&&val?String(val).slice(0,10):val)}" ${f.readonly?'readonly':''}>`;
+    html+=`</div>`; }
+  html+=`</div><div class="actions"><button class="btn ghost" onclick="closeModal()">Cancel</button><button class="btn green" onclick="saveForm(${id||0})">Save</button></div>`;
+  $('modalBox').innerHTML=html; $('modal').style.display='flex';
+  for(const f of META.fields.filter(f=>f.type==='ref')){ const sel=$('f_'+f.name); const opts=await api('/options/'+f.ref);
+    sel.innerHTML='<option value="">—</option>'+opts.map(o=>`<option value="${o.id}" ${o.id===row[f.name]?'selected':''}>${esc(o.label)}</option>`).join(''); }
+}
+function closeModal(){ $('modal').style.display='none'; }
+async function saveForm(id){ const data={};
+  for(const f of META.fields){ if(f.readonly) continue; const el=$('f_'+f.name); if(!el) continue;
+    data[f.name]=f.type==='bool'?el.value==='true':el.value; }
+  try{ await api('/t/'+CUR+(id?'/'+id:''),{method:id?'PUT':'POST',body:JSON.stringify(data)}); closeModal(); toast('Saved');
+    const d=await api('/t/'+CUR+'?q='+encodeURIComponent($('tsearch')?.value||'')); ROWS=d.rows; LABELS=d.labels; drawRows();
+  }catch(e){ toast(e.message,true); } }
+async function del(id){ if(!confirm('Delete this row?')) return;
+  try{ await api('/t/'+CUR+'/'+id,{method:'DELETE'}); toast('Deleted'); ROWS=ROWS.filter(r=>r.id!==id); drawRows(); }catch(e){ toast(e.message,true); } }
+
+/* ---------------- chats ---------------- */
+let CHAT=null, chatTimer=null;
+async function renderChats(){ const v=$('view');
+  v.innerHTML=`<div class="topbar"><h2>Live Chats</h2><select id="chatFilter" style="max-width:180px" onchange="loadChats()">
+    <option value="">All active</option><option value="human">Waiting for human</option><option value="bot">Handled by bot</option><option value="closed">Closed</option></select></div>
+    <div class="chatlayout"><div class="chatlist" id="chatlist"></div><div class="chatview" id="chatview"><div class="chatmsgs muted" style="padding:30px;text-align:center">Select a chat</div></div></div>`;
+  loadChats(); if(chatTimer) clearInterval(chatTimer); chatTimer=setInterval(()=>{ if(VIEW==='chats'){loadChats(true); if(CHAT) openChat(CHAT,true);} else clearInterval(chatTimer); },5000); }
+async function loadChats(quiet){ const f=$('chatFilter')?.value||''; const list=await api('/chats'+(f?'?status='+f:''));
+  $('chatlist').innerHTML=list.map(c=>`<div class="ci ${CHAT===c.id?'active':''}" onclick="openChat(${c.id})">
+    <div class="top"><span class="nm">${esc(c.customer)}</span><span class="tag s-${c.status==='human'?'sold':'booked'}">${c.status}</span></div>
+    <div class="lt">${c.channel} · ${esc(c.last_text||'')}</div>
+    ${c.unread?`<span class="badge">${c.unread} new</span>`:''}</div>`).join('')||'<p class="muted" style="padding:16px">No chats</p>'; }
+async function openChat(id,quiet){ CHAT=id; const d=await api('/chats/'+id); const cv=$('chatview');
+  const statusTag=`<span class="tag s-${d.status==='human'?'sold':'booked'}">${d.status}</span>`;
+  cv.innerHTML=`<div class="head"><div style="flex:1"><b>${esc(d.customer.name||d.customer.phone||'Visitor')}</b> ${statusTag}
+      <div class="muted mono" style="font-size:11px">${esc(d.customer.phone||'')} · ${d.channel} · ${esc(d.department||'')}</div></div>
+      ${d.status==='human'?`<button class="btn ghost sm" onclick="chatAction('release')">↩ Back to bot</button>`:`<button class="btn ghost sm" onclick="chatAction('takeover')">Take over</button>`}
+      <button class="btn ghost sm" onclick="chatAction('close')">Close</button></div>
+    ${d.handoff_reason?`<div style="padding:8px 16px;background:#3a2d10;color:#ffd27a;font-size:12px">⚠ Handoff: ${esc(d.handoff_reason)}</div>`:''}
+    ${d.customer.memory?`<div style="padding:8px 16px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)">🧠 ${esc(d.customer.memory)}</div>`:''}
+    <div class="chatmsgs" id="chatmsgs"></div>
+    <div class="chatinput"><input id="replyText" placeholder="Type a reply to the customer…" onkeydown="if(event.key==='Enter')sendReply()"><button class="btn green" onclick="sendReply()">Send</button></div>`;
+  $('chatmsgs').innerHTML=d.messages.map(m=>`<div class="cm ${m.role}"><div class="who">${m.role}${m.meta&&m.meta.staff?' · '+esc(m.meta.staff):''}</div>${esc(m.text)}</div>`).join('');
+  const mb=$('chatmsgs'); mb.scrollTop=mb.scrollHeight; if(!quiet) loadChats(true); }
+async function sendReply(){ const t=$('replyText').value.trim(); if(!t) return;
+  try{ await api('/chats/'+CHAT+'/reply',{method:'POST',body:JSON.stringify({text:t})}); $('replyText').value=''; openChat(CHAT,true); }catch(e){ toast(e.message,true); } }
+async function chatAction(a){ if(a==='close'&&!confirm('Close this chat?')) return;
+  try{ await api('/chats/'+CHAT+'/'+a,{method:'POST'}); toast('Done'); openChat(CHAT,true); loadChats(true); }catch(e){ toast(e.message,true); } }
+
+/* ---------------- simulator ---------------- */
+function renderSimulator(){ const v=$('view');
+  v.innerHTML=`<div class="topbar"><h2>WhatsApp Simulator</h2><span class="pill">No Meta setup needed</span></div>
+    <p class="muted">Chat as a customer, or use a staff number (e.g. 923001112233) to test staff commands like "Civic Oriel white sold".</p>
+    <div class="flex" style="margin-bottom:10px"><input id="simPhone" value="923451234567" style="max-width:200px" placeholder="Phone">
+      <button class="btn ghost sm" onclick="simPreset('923451234567','customer')">Customer</button>
+      <button class="btn ghost sm" onclick="simPreset('923001112233','sales')">Sales staff</button>
+      <button class="btn ghost sm" onclick="simPreset('923214445566','parts')">Parts staff</button>
+      <button class="btn ghost sm" onclick="simPreset('923337778899','service')">Service staff</button></div>
+    <div class="simlog" id="simlog"></div>
+    <div class="flex" style="margin-top:10px"><input id="simText" placeholder="Type a message…" onkeydown="if(event.key==='Enter')simSend()"><button class="btn green" onclick="simSend()">Send</button></div>
+    <p class="muted" style="font-size:12px;margin-top:8px">Staff examples: <span class="mono">Civic Oriel white sold</span> · <span class="mono">City brake pads stock 20</span> · <span class="mono">job 1043 ready bill 12500</span> · <span class="mono">stock</span> · <span class="mono">help</span></p>`;
+}
+function simPreset(phone){ $('simPhone').value=phone; $('simlog').innerHTML=''; }
+function simAdd(text,cls){ const d=document.createElement('div'); d.className='cm '+cls; d.style.maxWidth='90%';
+  d.innerHTML=esc(text).replace(/\*(.+?)\*/g,'<b>$1</b>'); $('simlog').appendChild(d); $('simlog').scrollTop=$('simlog').scrollHeight; }
+async function simSend(){ const text=$('simText').value.trim(); if(!text) return; $('simText').value=''; simAdd(text,'customer');
+  try{ const d=await api('/simulate/whatsapp',{method:'POST',body:JSON.stringify({phone:$('simPhone').value,text})});
+    if(!d.replies.length) simAdd('(no reply — handed to human / human-handled chat)','system');
+    d.replies.forEach(r=>{ simAdd(r.text,'bot'); if(r.buttons&&r.buttons.length) simAdd('[ '+r.buttons.join(' ] [ ')+' ]','system'); });
+  }catch(e){ toast(e.message,true); } }
+
+/* ---------------- knowledge ---------------- */
+async function renderKnowledge(){ const v=$('view'); const files=await api('/knowledge');
+  v.innerHTML=`<div class="topbar"><h2>Knowledge base (RAG)</h2></div>
+    <p class="muted">Upload brochures, price lists, warranty & policy docs (.pdf .md .txt). The bot searches these for document questions.</p>
+    <div class="flex" style="margin-bottom:14px"><input type="file" id="kbFile" accept=".pdf,.md,.txt"><button class="btn green" onclick="kbUpload()">Upload</button></div>
+    <div class="tablewrap"><table><tr><th>File</th><th>Chunks indexed</th><th>Size</th><th></th></tr>
+      ${files.map(f=>`<tr><td>${esc(f.name)}</td><td>${f.chunks}</td><td>${(f.size/1024).toFixed(1)} KB</td><td><button class="btn red sm" onclick="kbDel('${esc(f.name)}')">Delete</button></td></tr>`).join('')||'<tr><td colspan=4 class=muted>No documents yet</td></tr>'}</table></div>
+    <h3 style="margin-top:20px">Test search</h3><div class="flex"><input id="kbQ" placeholder="e.g. warranty, documents needed, service schedule" onkeydown="if(event.key==='Enter')kbSearch()"><button class="btn" onclick="kbSearch()">Search</button></div>
+    <div id="kbResults" style="margin-top:12px"></div>`; }
+async function kbUpload(){ const f=$('kbFile').files[0]; if(!f) return toast('Pick a file',true); const fd=new FormData(); fd.append('file',f);
+  try{ await fetch(API+'/knowledge',{method:'POST',headers:{'Authorization':'Bearer '+TOKEN},body:fd}).then(r=>{if(!r.ok)throw new Error('upload failed');}); toast('Uploaded & indexed'); renderKnowledge(); }catch(e){ toast(e.message,true); } }
+async function kbDel(name){ if(!confirm('Delete '+name+'?')) return; await api('/knowledge/'+encodeURIComponent(name),{method:'DELETE'}); toast('Deleted'); renderKnowledge(); }
+async function kbSearch(){ const q=$('kbQ').value; if(!q) return; const r=await api('/knowledge/search?q='+encodeURIComponent(q));
+  $('kbResults').innerHTML=r.length?r.map(x=>`<div class="card" style="margin-bottom:10px"><div class="muted mono">${esc(x.source)} · score ${x.score}</div><div style="margin-top:6px;white-space:pre-wrap">${esc(x.text.slice(0,500))}</div></div>`).join(''):'<p class="muted">No matches</p>'; }
+
+/* ---------------- import / export ---------------- */
+function renderImportExport(){ const v=$('view');
+  v.innerHTML=`<div class="topbar"><h2>Import / Export (Excel)</h2></div>
+    <p class="muted">Download a table as Excel, edit in Excel, and upload it back. Rows with a matching ID or key are updated; new rows are added. Daily stock/price updates can be done this way.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">
+      ${ME.tables.map(t=>`<div class="card"><b>${esc(t.label)}</b>
+        <div class="flex" style="margin-top:10px;flex-wrap:wrap">
+          <button class="btn ghost sm" onclick="dl('${t.name}',false)">⬇ Export</button>
+          <button class="btn ghost sm" onclick="dl('${t.name}',true)">⬇ Template</button>
+          <label class="btn sm" style="cursor:pointer">⬆ Import<input type="file" accept=".xlsx" style="display:none" onchange="imp('${t.name}',this)"></label>
+        </div></div>`).join('')}</div>
+    <div id="impResult" style="margin-top:16px"></div>`; }
+async function dl(name,template){ const r=await fetch(API+'/export/'+name+(template?'?template=true':''),{headers:{'Authorization':'Bearer '+TOKEN}});
+  if(!r.ok){ toast('Export failed',true); return; } const blob=await r.blob(); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name+(template?'-template':'')+'.xlsx'; a.click(); }
+async function imp(name,input){ const f=input.files[0]; if(!f) return; const fd=new FormData(); fd.append('file',f);
+  $('impResult').innerHTML='<p class="muted">Importing…</p>';
+  try{ const r=await fetch(API+'/import/'+name,{method:'POST',headers:{'Authorization':'Bearer '+TOKEN},body:fd}); const d=await r.json();
+    if(!r.ok) throw new Error(d.detail||'import failed');
+    $('impResult').innerHTML=`<div class="card"><b>${name}:</b> ${d.created} added, ${d.updated} updated.
+      ${d.errors.length?'<div style="color:#ff9db1;margin-top:8px">'+d.errors.map(esc).join('<br>')+'</div>':' ✅ no errors'}</div>`;
+    toast('Imported'); }catch(e){ $('impResult').innerHTML=''; toast(e.message,true); } input.value=''; }
+
+if(TOKEN) boot();
+</script>
+</body>
+</html>
